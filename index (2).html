@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cierre Diario</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Cierre Diario</h1>
+  <button id="toggleDark"> Modo oscuro</button>
+</header>
+
+<div class="card resumen">
+  <h2>Total vendido del día</h2>
+  <input id="totalDia" disabled>
+</div>
+
+<div class="card">
+  <div class="date" id="fecha"></div>
+
+  <input id="descripcion" placeholder="Descripción del producto">
+  <input id="codigo" placeholder="Código">
+
+  <input type="number" id="inicio" placeholder="Inicio">
+  <input type="number" id="retorno" placeholder="Retorno">
+  <input type="number" id="precio" placeholder="Precio de mercancía">
+
+  <input id="vendidos" placeholder="Total vendidos" disabled>
+  <input id="total" placeholder="Total $ generado" disabled>
+
+  <button id="guardarBtn">Guardar cierre</button>
+</div>
+
+<div class="card">
+  <h3>Vista previa de cierres</h3>
+  <input type="date" id="filtroFecha">
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Producto</th>
+        <th>Código</th>
+        <th>Vendidos</th>
+        <th>Total $</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="lista"></tbody>
+  </table>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
