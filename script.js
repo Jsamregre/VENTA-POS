@@ -13,8 +13,6 @@ const totalInput = document.getElementById('total');
 const totalDiaInput = document.getElementById('totalDia');
 const guardarBtn = document.getElementById('guardarBtn');
 
-let editIndex = null;
-
 // ===== TOTAL DEL DÍA =====
 let totalDia = JSON.parse(localStorage.getItem('totalDia'));
 if (!totalDia || totalDia.fecha !== hoy) {
@@ -40,20 +38,14 @@ function calcular() {
   el.addEventListener('input', calcular)
 );
 
-// ===== GUARDAR =====
+// ===== GUARDAR CIERRE =====
 function guardarCierre() {
   const vendidos = Number(vendidosInput.value);
   const total = Number(totalInput.value);
+
   if (vendidos <= 0 || total <= 0) return;
 
   let data = JSON.parse(localStorage.getItem('cierres')) || [];
-
-  if (editIndex !== null) {
-    const anterior = data[editIndex];
-    totalDia.total -= anterior.total;
-    data.splice(editIndex, 1);
-    editIndex = null;
-  }
 
   data.push({
     fecha: hoy,
@@ -65,20 +57,23 @@ function guardarCierre() {
 
   localStorage.setItem('cierres', JSON.stringify(data));
 
+  // Sumar al total del día
   totalDia.total += total;
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
   totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
+  // Limpiar formulario
   descripcionInput.value = "";
   codigoInput.value = "";
   inicioInput.value = "";
   retornoInput.value = "";
   precioInput.value = "";
   calcular();
+
   mostrar();
 }
 
-// ===== MOSTRAR =====
+// ===== MOSTRAR VISTA PREVIA =====
 function mostrar() {
   const lista = document.getElementById('lista');
   lista.innerHTML = "";
@@ -99,32 +94,35 @@ function mostrar() {
     `;
 
     const btn = document.createElement('button');
-    btn.textContent = "Editar";
+    btn.textContent = "Eliminar";
     btn.className = "action-btn";
-    btn.addEventListener('click', () => editarCierre(index));
+    btn.style.background = "#e74c3c";
+    btn.addEventListener('click', () => eliminarCierre(index));
 
     tr.children[5].appendChild(btn);
     lista.appendChild(tr);
   });
 }
 
-// ===== EDITAR =====
-function editarCierre(index) {
-  const data = JSON.parse(localStorage.getItem('cierres'));
-  const c = data[index];
+// ===== ELIMINAR CIERRE =====
+function eliminarCierre(index) {
+  let data = JSON.parse(localStorage.getItem('cierres')) || [];
+  const cierre = data[index];
 
-  descripcionInput.value = c.descripcion;
-  codigoInput.value = c.codigo;
-  inicioInput.value = c.vendidos;
-  retornoInput.value = 0;
-  precioInput.value = c.total / c.vendidos;
-  calcular();
+  if (!confirm("¿Deseas eliminar este cierre?")) return;
 
-  totalDia.total -= c.total;
+  // Restar del total del día
+  totalDia.total -= cierre.total;
+  if (totalDia.total < 0) totalDia.total = 0;
+
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
   totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
-  editIndex = index;
+  // Eliminar registro
+  data.splice(index, 1);
+  localStorage.setItem('cierres', JSON.stringify(data));
+
+  mostrar();
 }
 
 // ===== EVENTOS =====
@@ -134,4 +132,6 @@ document.getElementById('toggleDark').addEventListener('click', () =>
   document.body.classList.toggle('dark')
 );
 
+// ===== INICIO =====
 mostrar();
+    
