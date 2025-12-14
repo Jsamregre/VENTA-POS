@@ -1,0 +1,137 @@
+// ===== FECHA ACTUAL =====
+const hoy = new Date().toISOString().split('T')[0];
+document.getElementById('fecha').innerText = "Fecha: " + hoy;
+
+// ===== INPUTS =====
+const descripcionInput = document.getElementById('descripcion');
+const codigoInput = document.getElementById('codigo');
+const inicioInput = document.getElementById('inicio');
+const retornoInput = document.getElementById('retorno');
+const precioInput = document.getElementById('precio');
+const vendidosInput = document.getElementById('vendidos');
+const totalInput = document.getElementById('total');
+const totalDiaInput = document.getElementById('totalDia');
+const guardarBtn = document.getElementById('guardarBtn');
+
+let editIndex = null;
+
+// ===== TOTAL DEL DÍA =====
+let totalDia = JSON.parse(localStorage.getItem('totalDia'));
+if (!totalDia || totalDia.fecha !== hoy) {
+  totalDia = { fecha: hoy, total: 0 };
+  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+}
+totalDiaInput.value = "$" + totalDia.total.toFixed(2);
+
+// ===== CALCULAR =====
+function calcular() {
+  const inicio = Number(inicioInput.value) || 0;
+  const retorno = Number(retornoInput.value) || 0;
+  const precio = Number(precioInput.value) || 0;
+
+  const vendidos = inicio - retorno;
+  const total = vendidos * precio;
+
+  vendidosInput.value = vendidos > 0 ? vendidos : 0;
+  totalInput.value = total > 0 ? total.toFixed(2) : "0.00";
+}
+
+[inicioInput, retornoInput, precioInput].forEach(el =>
+  el.addEventListener('input', calcular)
+);
+
+// ===== GUARDAR =====
+function guardarCierre() {
+  const vendidos = Number(vendidosInput.value);
+  const total = Number(totalInput.value);
+  if (vendidos <= 0 || total <= 0) return;
+
+  let data = JSON.parse(localStorage.getItem('cierres')) || [];
+
+  if (editIndex !== null) {
+    const anterior = data[editIndex];
+    totalDia.total -= anterior.total;
+    data.splice(editIndex, 1);
+    editIndex = null;
+  }
+
+  data.push({
+    fecha: hoy,
+    descripcion: descripcionInput.value,
+    codigo: codigoInput.value,
+    vendidos,
+    total
+  });
+
+  localStorage.setItem('cierres', JSON.stringify(data));
+
+  totalDia.total += total;
+  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+  totalDiaInput.value = "$" + totalDia.total.toFixed(2);
+
+  descripcionInput.value = "";
+  codigoInput.value = "";
+  inicioInput.value = "";
+  retornoInput.value = "";
+  precioInput.value = "";
+  calcular();
+  mostrar();
+}
+
+// ===== MOSTRAR =====
+function mostrar() {
+  const lista = document.getElementById('lista');
+  lista.innerHTML = "";
+  const data = JSON.parse(localStorage.getItem('cierres')) || [];
+  const filtro = document.getElementById('filtroFecha').value;
+
+  data.forEach((c, index) => {
+    if (filtro && c.fecha !== filtro) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.fecha}</td>
+      <td>${c.descripcion}</td>
+      <td>${c.codigo}</td>
+      <td>${c.vendidos}</td>
+      <td>$${c.total.toFixed(2)}</td>
+      <td></td>
+    `;
+
+    const btn = document.createElement('button');
+    btn.textContent = "Editar";
+    btn.className = "action-btn";
+    btn.addEventListener('click', () => editarCierre(index));
+
+    tr.children[5].appendChild(btn);
+    lista.appendChild(tr);
+  });
+}
+
+// ===== EDITAR =====
+function editarCierre(index) {
+  const data = JSON.parse(localStorage.getItem('cierres'));
+  const c = data[index];
+
+  descripcionInput.value = c.descripcion;
+  codigoInput.value = c.codigo;
+  inicioInput.value = c.vendidos;
+  retornoInput.value = 0;
+  precioInput.value = c.total / c.vendidos;
+  calcular();
+
+  totalDia.total -= c.total;
+  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+  totalDiaInput.value = "$" + totalDia.total.toFixed(2);
+
+  editIndex = index;
+}
+
+// ===== EVENTOS =====
+guardarBtn.addEventListener('click', guardarCierre);
+document.getElementById('filtroFecha').addEventListener('change', mostrar);
+document.getElementById('toggleDark').addEventListener('click', () =>
+  document.body.classList.toggle('dark')
+);
+
+mostrar();
