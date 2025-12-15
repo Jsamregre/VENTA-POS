@@ -31,7 +31,6 @@ body.dark .card {
 
 .resumen {
   text-align: center;
-  font-size: 20px;
 }
 
 input, button {
@@ -62,6 +61,7 @@ button {
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 8px;
 }
 
 th, td {
@@ -70,8 +70,8 @@ th, td {
   text-align: center;
 }
 
-.action-btn {
-  background: #f2994a;
+.delete-btn {
+  background: #e74c3c;
   color: #fff;
   border: none;
   padding: 4px 8px;
