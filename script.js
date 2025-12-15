@@ -1,4 +1,4 @@
-// ===== FECHA ACTUAL =====
+// ===== FECHA =====
 const hoy = new Date().toISOString().split('T')[0];
 document.getElementById('fecha').innerText = "Fecha: " + hoy;
 
@@ -38,11 +38,10 @@ function calcular() {
   el.addEventListener('input', calcular)
 );
 
-// ===== GUARDAR CIERRE =====
+// ===== GUARDAR =====
 function guardarCierre() {
   const vendidos = Number(vendidosInput.value);
   const total = Number(totalInput.value);
-
   if (vendidos <= 0 || total <= 0) return;
 
   let data = JSON.parse(localStorage.getItem('cierres')) || [];
@@ -57,12 +56,10 @@ function guardarCierre() {
 
   localStorage.setItem('cierres', JSON.stringify(data));
 
-  // Sumar al total del día
   totalDia.total += total;
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
   totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
-  // Limpiar formulario
   descripcionInput.value = "";
   codigoInput.value = "";
   inicioInput.value = "";
@@ -73,7 +70,7 @@ function guardarCierre() {
   mostrar();
 }
 
-// ===== MOSTRAR VISTA PREVIA =====
+// ===== MOSTRAR =====
 function mostrar() {
   const lista = document.getElementById('lista');
   lista.innerHTML = "";
@@ -95,8 +92,7 @@ function mostrar() {
 
     const btn = document.createElement('button');
     btn.textContent = "Eliminar";
-    btn.className = "action-btn";
-    btn.style.background = "#e74c3c";
+    btn.className = "delete-btn";
     btn.addEventListener('click', () => eliminarCierre(index));
 
     tr.children[5].appendChild(btn);
@@ -104,26 +100,35 @@ function mostrar() {
   });
 }
 
-// ===== ELIMINAR CIERRE =====
+// ===== ELIMINAR =====
 function eliminarCierre(index) {
   let data = JSON.parse(localStorage.getItem('cierres')) || [];
   const cierre = data[index];
 
-  if (!confirm("¿Deseas eliminar este cierre?")) return;
+  if (!confirm("¿Eliminar este cierre?")) return;
 
-  // Restar del total del día
   totalDia.total -= cierre.total;
   if (totalDia.total < 0) totalDia.total = 0;
 
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
   totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
-  // Eliminar registro
   data.splice(index, 1);
   localStorage.setItem('cierres', JSON.stringify(data));
 
   mostrar();
 }
+
+// ===== CALENDARIO =====
+document.getElementById('addCalendar').addEventListener('click', () => {
+  const total = totalDia.total.toFixed(2);
+  const fecha = hoy.replace(/-/g, '');
+
+  const texto = `Cierre diario\nFecha: ${hoy}\nTotal vendido: $${total}`;
+  const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=Cierre Diario&dates=${fecha}/${fecha}&details=${encodeURIComponent(texto)}`;
+
+  window.open(url, '_blank');
+});
 
 // ===== EVENTOS =====
 guardarBtn.addEventListener('click', guardarCierre);
