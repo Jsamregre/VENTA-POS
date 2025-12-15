@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cierre Diario</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -13,20 +13,26 @@
   <button id="toggleDark">🌙 Modo oscuro</button>
 </header>
 
-<!-- TOTAL DEL DÍA -->
+<!-- RESUMEN -->
 <div class="card resumen">
   <h2>Total vendido del día</h2>
   <input id="totalDia" disabled>
+
+  <h3>Total gastos del día</h3>
+  <input id="totalGastos" disabled>
+
+  <h2>Efectivo real esperado</h2>
+  <input id="efectivoReal" disabled>
+
   <button id="addCalendar">📅 Guardar cierre en calendario</button>
 </div>
 
-<!-- FORMULARIO -->
+<!-- FORMULARIO CIERRE -->
 <div class="card">
   <div class="date" id="fecha"></div>
 
   <input id="descripcion" placeholder="Descripción del producto">
   <input id="codigo" placeholder="Código">
-
   <input type="number" id="inicio" placeholder="Inicio">
   <input type="number" id="retorno" placeholder="Retorno">
   <input type="number" id="precio" placeholder="Precio de mercancía">
@@ -37,18 +43,27 @@
   <button id="guardarBtn">Guardar cierre</button>
 </div>
 
+<!-- FORMULARIO GASTOS -->
+<div class="card">
+  <h3>Gastos del día</h3>
+  <input id="gastoDesc" placeholder="Descripción del gasto">
+  <input type="number" id="gastoMonto" placeholder="Monto del gasto">
+  <button id="agregarGasto">Agregar gasto</button>
+</div>
+
 <!-- VISTA PREVIA -->
 <div class="card">
-  <h3>Vista previa de cierres</h3>
+  <h3>Vista previa de cierres y gastos</h3>
   <input type="date" id="filtroFecha">
 
   <table>
     <thead>
       <tr>
+        <th>Tipo</th>
         <th>Fecha</th>
-        <th>Producto</th>
-        <th>Código</th>
-        <th>Vendidos</th>
+        <th>Descripción</th>
+        <th>Código / -</th>
+        <th>Vendidos / Monto</th>
         <th>Total $</th>
         <th>Eliminar</th>
       </tr>
@@ -57,7 +72,7 @@
   </table>
 </div>
 
-<script src="script.js"></script>
+<script src="app.js"></script>
 </body>
-  </html>
-                      
+    </html>
+    
