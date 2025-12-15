@@ -15,12 +15,10 @@ const totalDiaInput = document.getElementById('totalDia');
 const totalGastosInput = document.getElementById('totalGastos');
 const efectivoRealInput = document.getElementById('efectivoReal');
 
-// ===== STORAGE BASE =====
 let cierres = JSON.parse(localStorage.getItem('cierres')) || [];
 let gastos = JSON.parse(localStorage.getItem('gastos')) || [];
-
-// ===== TOTAL DEL DÍA =====
 let totalDia = JSON.parse(localStorage.getItem('totalDia'));
+
 if (!totalDia || totalDia.fecha !== hoy) {
   totalDia = { fecha: hoy, total: 0 };
   gastos = [];
@@ -75,42 +73,6 @@ document.getElementById('guardarBtn').addEventListener('click', () => {
   mostrar();
 });
 
-// ===== MOSTRAR CIERRES =====
-function mostrar() {
-  const lista = document.getElementById('lista');
-  lista.innerHTML = "";
-  const filtro = document.getElementById('filtroFecha').value;
-
-  cierres.forEach((c, i) => {
-    if (filtro && c.fecha !== filtro) return;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${c.fecha}</td>
-      <td>${c.descripcion}</td>
-      <td>${c.codigo}</td>
-      <td>${c.vendidos}</td>
-      <td>$${c.total.toFixed(2)}</td>
-      <td><button onclick="eliminarCierre(${i})">Eliminar</button></td>
-    `;
-    lista.appendChild(tr);
-  });
-}
-
-// ===== ELIMINAR CIERRE =====
-function eliminarCierre(i) {
-  if (!confirm("¿Eliminar cierre?")) return;
-
-  totalDia.total -= cierres[i].total;
-  cierres.splice(i, 1);
-
-  localStorage.setItem('cierres', JSON.stringify(cierres));
-  localStorage.setItem('totalDia', JSON.stringify(totalDia));
-
-  actualizarResumen();
-  mostrar();
-}
-
 // ===== GASTOS =====
 document.getElementById('agregarGasto').addEventListener('click', () => {
   const desc = document.getElementById('gastoDesc').value;
@@ -127,23 +89,71 @@ document.getElementById('agregarGasto').addEventListener('click', () => {
   actualizarResumen();
 });
 
-function mostrarGastos() {
-  const ul = document.getElementById('listaGastos');
-  ul.innerHTML = "";
+// ===== MOSTRAR =====
+function mostrar() {
+  const lista = document.getElementById('lista');
+  lista.innerHTML = "";
+  const filtro = document.getElementById('filtroFecha').value;
 
+  // CIERRES
+  cierres.forEach((c, i) => {
+    if (filtro && c.fecha !== filtro) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>Venta</td>
+      <td>${c.fecha}</td>
+      <td>${c.descripcion}</td>
+      <td>${c.codigo}</td>
+      <td>${c.vendidos}</td>
+      <td>$${c.total.toFixed(2)}</td>
+      <td><button onclick="eliminarCierre(${i})">Eliminar</button></td>
+    `;
+    lista.appendChild(tr);
+  });
+
+  // GASTOS
   gastos.forEach((g, i) => {
-    const li = document.createElement('li');
-    li.innerHTML = `${g.desc} - $${g.monto.toFixed(2)}
-      <button onclick="eliminarGasto(${i})">❌</button>`;
-    ul.appendChild(li);
+    if (filtro && totalDia.fecha !== filtro && totalDia.fecha !== g.fecha) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>Gasto</td>
+      <td>${hoy}</td>
+      <td>${g.desc}</td>
+      <td>-</td>
+      <td>-</td>
+      <td>$${g.monto.toFixed(2)}</td>
+      <td><button onclick="eliminarGasto(${i})">Eliminar</button></td>
+    `;
+    lista.appendChild(tr);
   });
 }
 
+// ===== ELIMINAR =====
+function eliminarCierre(i) {
+  if (!confirm("¿Eliminar cierre?")) return;
+
+  totalDia.total -= cierres[i].total;
+  cierres.splice(i, 1);
+
+  localStorage.setItem('cierres', JSON.stringify(cierres));
+  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+
+  actualizarResumen();
+  mostrar();
+}
+
 function eliminarGasto(i) {
+  if (!confirm("¿Eliminar gasto?")) return;
+
   gastos.splice(i, 1);
   localStorage.setItem('gastos', JSON.stringify(gastos));
-  mostrarGastos();
+
   actualizarResumen();
+  mostrar();
+}
+
+function mostrarGastos() {
+  // Se usa solo para actualizar lista interna
 }
 
 // ===== RESUMEN =====
@@ -189,6 +199,5 @@ document.getElementById('filtroFecha')
 
 // ===== INIT =====
 mostrar();
-mostrarGastos();
 actualizarResumen();
   
