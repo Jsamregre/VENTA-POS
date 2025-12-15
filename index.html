@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cierre Diario</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -13,16 +13,20 @@
   <button id="toggleDark">🌙 Modo oscuro</button>
 </header>
 
+<!-- TOTAL DEL DÍA -->
 <div class="card resumen">
   <h2>Total vendido del día</h2>
   <input id="totalDia" disabled>
+  <button id="addCalendar">📅 Guardar cierre en calendario</button>
 </div>
 
+<!-- FORMULARIO -->
 <div class="card">
   <div class="date" id="fecha"></div>
 
   <input id="descripcion" placeholder="Descripción del producto">
   <input id="codigo" placeholder="Código">
+
   <input type="number" id="inicio" placeholder="Inicio">
   <input type="number" id="retorno" placeholder="Retorno">
   <input type="number" id="precio" placeholder="Precio de mercancía">
@@ -33,9 +37,11 @@
   <button id="guardarBtn">Guardar cierre</button>
 </div>
 
+<!-- VISTA PREVIA -->
 <div class="card">
   <h3>Vista previa de cierres</h3>
   <input type="date" id="filtroFecha">
+
   <table>
     <thead>
       <tr>
@@ -44,13 +50,14 @@
         <th>Código</th>
         <th>Vendidos</th>
         <th>Total $</th>
-        <th>Acción</th>
+        <th>Eliminar</th>
       </tr>
     </thead>
     <tbody id="lista"></tbody>
   </table>
 </div>
 
-<script src="script.js"></script>
+<script src="app.js"></script>
 </body>
-</html>
+  </html>
+                      
