@@ -10,16 +10,23 @@ const retornoInput = document.getElementById('retorno');
 const precioInput = document.getElementById('precio');
 const vendidosInput = document.getElementById('vendidos');
 const totalInput = document.getElementById('total');
+
 const totalDiaInput = document.getElementById('totalDia');
-const guardarBtn = document.getElementById('guardarBtn');
+const totalGastosInput = document.getElementById('totalGastos');
+const efectivoRealInput = document.getElementById('efectivoReal');
+
+// ===== STORAGE BASE =====
+let cierres = JSON.parse(localStorage.getItem('cierres')) || [];
+let gastos = JSON.parse(localStorage.getItem('gastos')) || [];
 
 // ===== TOTAL DEL DÍA =====
 let totalDia = JSON.parse(localStorage.getItem('totalDia'));
 if (!totalDia || totalDia.fecha !== hoy) {
   totalDia = { fecha: hoy, total: 0 };
+  gastos = [];
+  localStorage.setItem('gastos', JSON.stringify(gastos));
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
 }
-totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
 // ===== CALCULAR =====
 function calcular() {
@@ -34,19 +41,17 @@ function calcular() {
   totalInput.value = total > 0 ? total.toFixed(2) : "0.00";
 }
 
-[inicioInput, retornoInput, precioInput].forEach(el =>
-  el.addEventListener('input', calcular)
+[inicioInput, retornoInput, precioInput].forEach(i =>
+  i.addEventListener('input', calcular)
 );
 
-// ===== GUARDAR =====
-function guardarCierre() {
+// ===== GUARDAR CIERRE =====
+document.getElementById('guardarBtn').addEventListener('click', () => {
   const vendidos = Number(vendidosInput.value);
   const total = Number(totalInput.value);
   if (vendidos <= 0 || total <= 0) return;
 
-  let data = JSON.parse(localStorage.getItem('cierres')) || [];
-
-  data.push({
+  cierres.push({
     fecha: hoy,
     descripcion: descripcionInput.value,
     codigo: codigoInput.value,
@@ -54,11 +59,10 @@ function guardarCierre() {
     total
   });
 
-  localStorage.setItem('cierres', JSON.stringify(data));
-
   totalDia.total += total;
+
+  localStorage.setItem('cierres', JSON.stringify(cierres));
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
-  totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
   descripcionInput.value = "";
   codigoInput.value = "";
@@ -67,17 +71,17 @@ function guardarCierre() {
   precioInput.value = "";
   calcular();
 
+  actualizarResumen();
   mostrar();
-}
+});
 
-// ===== MOSTRAR =====
+// ===== MOSTRAR CIERRES =====
 function mostrar() {
   const lista = document.getElementById('lista');
   lista.innerHTML = "";
-  const data = JSON.parse(localStorage.getItem('cierres')) || [];
   const filtro = document.getElementById('filtroFecha').value;
 
-  data.forEach((c, index) => {
+  cierres.forEach((c, i) => {
     if (filtro && c.fecha !== filtro) return;
 
     const tr = document.createElement('tr');
@@ -87,56 +91,104 @@ function mostrar() {
       <td>${c.codigo}</td>
       <td>${c.vendidos}</td>
       <td>$${c.total.toFixed(2)}</td>
-      <td></td>
+      <td><button onclick="eliminarCierre(${i})">Eliminar</button></td>
     `;
-
-    const btn = document.createElement('button');
-    btn.textContent = "Eliminar";
-    btn.className = "delete-btn";
-    btn.addEventListener('click', () => eliminarCierre(index));
-
-    tr.children[5].appendChild(btn);
     lista.appendChild(tr);
   });
 }
 
-// ===== ELIMINAR =====
-function eliminarCierre(index) {
-  let data = JSON.parse(localStorage.getItem('cierres')) || [];
-  const cierre = data[index];
+// ===== ELIMINAR CIERRE =====
+function eliminarCierre(i) {
+  if (!confirm("¿Eliminar cierre?")) return;
 
-  if (!confirm("¿Eliminar este cierre?")) return;
+  totalDia.total -= cierres[i].total;
+  cierres.splice(i, 1);
 
-  totalDia.total -= cierre.total;
-  if (totalDia.total < 0) totalDia.total = 0;
-
+  localStorage.setItem('cierres', JSON.stringify(cierres));
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
-  totalDiaInput.value = "$" + totalDia.total.toFixed(2);
 
-  data.splice(index, 1);
-  localStorage.setItem('cierres', JSON.stringify(data));
-
+  actualizarResumen();
   mostrar();
+}
+
+// ===== GASTOS =====
+document.getElementById('agregarGasto').addEventListener('click', () => {
+  const desc = document.getElementById('gastoDesc').value;
+  const monto = Number(document.getElementById('gastoMonto').value);
+  if (!desc || monto <= 0) return;
+
+  gastos.push({ desc, monto });
+  localStorage.setItem('gastos', JSON.stringify(gastos));
+
+  document.getElementById('gastoDesc').value = "";
+  document.getElementById('gastoMonto').value = "";
+
+  mostrarGastos();
+  actualizarResumen();
+});
+
+function mostrarGastos() {
+  const ul = document.getElementById('listaGastos');
+  ul.innerHTML = "";
+
+  gastos.forEach((g, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `${g.desc} - $${g.monto.toFixed(2)}
+      <button onclick="eliminarGasto(${i})">❌</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function eliminarGasto(i) {
+  gastos.splice(i, 1);
+  localStorage.setItem('gastos', JSON.stringify(gastos));
+  mostrarGastos();
+  actualizarResumen();
+}
+
+// ===== RESUMEN =====
+function actualizarResumen() {
+  const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
+  const efectivo = totalDia.total - totalGastos;
+
+  totalDiaInput.value = "$" + totalDia.total.toFixed(2);
+  totalGastosInput.value = "$" + totalGastos.toFixed(2);
+  efectivoRealInput.value = "$" + efectivo.toFixed(2);
 }
 
 // ===== CALENDARIO =====
 document.getElementById('addCalendar').addEventListener('click', () => {
-  const total = totalDia.total.toFixed(2);
   const fecha = hoy.replace(/-/g, '');
+  const totalVendido = totalDiaInput.value;
+  const totalGastos = totalGastosInput.value;
+  const efectivoReal = efectivoRealInput.value;
 
-  const texto = `Cierre diario\nFecha: ${hoy}\nTotal vendido: $${total}`;
-  const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=Cierre Diario&dates=${fecha}/${fecha}&details=${encodeURIComponent(texto)}`;
+  const texto = `
+Cierre diario
+Fecha: ${hoy}
+
+Total vendido: ${totalVendido}
+Gastos del día: ${totalGastos}
+Efectivo real esperado: ${efectivoReal}
+  `;
+
+  const url = `https://www.google.com/calendar/render?action=TEMPLATE
+&text=Cierre Diario
+&dates=${fecha}/${fecha}
+&details=${encodeURIComponent(texto)}`.replace(/\s+/g, '');
 
   window.open(url, '_blank');
 });
 
-// ===== EVENTOS =====
-guardarBtn.addEventListener('click', guardarCierre);
-document.getElementById('filtroFecha').addEventListener('change', mostrar);
-document.getElementById('toggleDark').addEventListener('click', () =>
-  document.body.classList.toggle('dark')
-);
+// ===== UI =====
+document.getElementById('toggleDark')
+  .addEventListener('click', () => document.body.classList.toggle('dark'));
 
-// ===== INICIO =====
+document.getElementById('filtroFecha')
+  .addEventListener('change', mostrar);
+
+// ===== INIT =====
 mostrar();
-    
+mostrarGastos();
+actualizarResumen();
+  
