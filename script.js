@@ -182,7 +182,7 @@ Gastos del día: ${totalGastos}
 Efectivo real esperado: ${efectivoReal}
   `;
 
-  const url = `https://www.google.com/calendar/render?action=TEMPLATE
+  const url = `https://www.calendar.com/calendar/render?action=TEMPLATE
 &text=Cierre Diario
 &dates=${fecha}/${fecha}
 &details=${encodeURIComponent(texto)}`.replace(/\s+/g, '');
