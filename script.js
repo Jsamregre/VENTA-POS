@@ -1,8 +1,8 @@
-// ===== FECHA =====
+// ================= FECHA =================
 const hoy = new Date().toISOString().split('T')[0];
 document.getElementById('fecha').innerText = "Fecha: " + hoy;
 
-// ===== INPUTS =====
+// ================= INPUTS =================
 const descripcionInput = document.getElementById('descripcion');
 const codigoInput = document.getElementById('codigo');
 const inicioInput = document.getElementById('inicio');
@@ -15,6 +15,7 @@ const totalDiaInput = document.getElementById('totalDia');
 const totalGastosInput = document.getElementById('totalGastos');
 const efectivoRealInput = document.getElementById('efectivoReal');
 
+// ================= STORAGE =================
 let cierres = JSON.parse(localStorage.getItem('cierres')) || [];
 let gastos = JSON.parse(localStorage.getItem('gastos')) || [];
 let totalDia = JSON.parse(localStorage.getItem('totalDia'));
@@ -26,7 +27,7 @@ if (!totalDia || totalDia.fecha !== hoy) {
   localStorage.setItem('totalDia', JSON.stringify(totalDia));
 }
 
-// ===== CALCULAR =====
+// ================= CALCULAR =================
 function calcular() {
   const inicio = Number(inicioInput.value) || 0;
   const retorno = Number(retornoInput.value) || 0;
@@ -43,7 +44,7 @@ function calcular() {
   i.addEventListener('input', calcular)
 );
 
-// ===== GUARDAR CIERRE =====
+// ================= GUARDAR CIERRE =================
 document.getElementById('guardarBtn').addEventListener('click', () => {
   const vendidos = Number(vendidosInput.value);
   const total = Number(totalInput.value);
@@ -73,7 +74,7 @@ document.getElementById('guardarBtn').addEventListener('click', () => {
   mostrar();
 });
 
-// ===== GASTOS =====
+// ================= GASTOS =================
 document.getElementById('agregarGasto').addEventListener('click', () => {
   const desc = document.getElementById('gastoDesc').value;
   const monto = Number(document.getElementById('gastoMonto').value);
@@ -85,19 +86,19 @@ document.getElementById('agregarGasto').addEventListener('click', () => {
   document.getElementById('gastoDesc').value = "";
   document.getElementById('gastoMonto').value = "";
 
-  mostrarGastos();
   actualizarResumen();
+  mostrar();
 });
 
-// ===== MOSTRAR =====
+// ================= MOSTRAR =================
 function mostrar() {
   const lista = document.getElementById('lista');
   lista.innerHTML = "";
   const filtro = document.getElementById('filtroFecha').value;
 
-  // CIERRES
   cierres.forEach((c, i) => {
     if (filtro && c.fecha !== filtro) return;
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>Venta</td>
@@ -111,9 +112,7 @@ function mostrar() {
     lista.appendChild(tr);
   });
 
-  // GASTOS
   gastos.forEach((g, i) => {
-    if (filtro && totalDia.fecha !== filtro && totalDia.fecha !== g.fecha) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>Gasto</td>
@@ -128,7 +127,7 @@ function mostrar() {
   });
 }
 
-// ===== ELIMINAR =====
+// ================= ELIMINAR =================
 function eliminarCierre(i) {
   if (!confirm("¿Eliminar cierre?")) return;
 
@@ -152,11 +151,7 @@ function eliminarGasto(i) {
   mostrar();
 }
 
-function mostrarGastos() {
-  // Se usa solo para actualizar lista interna
-}
-
-// ===== RESUMEN =====
+// ================= RESUMEN =================
 function actualizarResumen() {
   const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
   const efectivo = totalDia.total - totalGastos;
@@ -166,38 +161,35 @@ function actualizarResumen() {
   efectivoRealInput.value = "$" + efectivo.toFixed(2);
 }
 
-// ===== CALENDARIO =====
+// ================= CALENDARIO (WEBINTOAPP) =================
 document.getElementById('addCalendar').addEventListener('click', () => {
-  const fecha = hoy.replace(/-/g, '');
-  const totalVendido = totalDiaInput.value;
-  const totalGastos = totalGastosInput.value;
-  const efectivoReal = efectivoRealInput.value;
 
-  const texto = `
-Cierre diario
+  const fecha = hoy.replace(/-/g, '');
+
+  const texto =
+`Cierre diario
 Fecha: ${hoy}
 
-Total vendido: ${totalVendido}
-Gastos del día: ${totalGastos}
-Efectivo real esperado: ${efectivoReal}
-  `;
+Total vendido: ${totalDiaInput.value}
+Gastos del día: ${totalGastosInput.value}
+Efectivo real esperado: ${efectivoRealInput.value}`;
 
-  const url = `https://www.calendar.com/calendar/render?action=TEMPLATE
+  const url =
+`https://calendar.google.com/calendar/render?action=TEMPLATE
 &text=Cierre Diario
 &dates=${fecha}/${fecha}
-&details=${encodeURIComponent(texto)}`.replace(/\s+/g, '');
+&details=${encodeURIComponent(texto)}`;
 
-  window.open(url, '_blank');
+  window.location.href = url;
 });
 
-// ===== UI =====
+// ================= UI =================
 document.getElementById('toggleDark')
   .addEventListener('click', () => document.body.classList.toggle('dark'));
 
 document.getElementById('filtroFecha')
   .addEventListener('change', mostrar);
 
-// ===== INIT =====
+// ================= INIT =================
 mostrar();
 actualizarResumen();
-  
