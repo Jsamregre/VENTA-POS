@@ -1,30 +1,30 @@
 // ================= FECHA =================
-const hoy = new Date().toISOString().split('T')[0];
-document.getElementById('fecha').innerText = "Fecha: " + hoy;
+const hoy = new Date().toISOString().split("T")[0];
+document.getElementById("fecha").innerText = "Fecha: " + hoy;
 
 // ================= INPUTS =================
-const descripcionInput = document.getElementById('descripcion');
-const codigoInput = document.getElementById('codigo');
-const inicioInput = document.getElementById('inicio');
-const retornoInput = document.getElementById('retorno');
-const precioInput = document.getElementById('precio');
-const vendidosInput = document.getElementById('vendidos');
-const totalInput = document.getElementById('total');
+const descripcionInput = document.getElementById("descripcion");
+const codigoInput = document.getElementById("codigo");
+const inicioInput = document.getElementById("inicio");
+const retornoInput = document.getElementById("retorno");
+const precioInput = document.getElementById("precio");
+const vendidosInput = document.getElementById("vendidos");
+const totalInput = document.getElementById("total");
 
-const totalDiaInput = document.getElementById('totalDia');
-const totalGastosInput = document.getElementById('totalGastos');
-const efectivoRealInput = document.getElementById('efectivoReal');
+const totalDiaInput = document.getElementById("totalDia");
+const totalGastosInput = document.getElementById("totalGastos");
+const efectivoRealInput = document.getElementById("efectivoReal");
 
 // ================= STORAGE =================
-let cierres = JSON.parse(localStorage.getItem('cierres')) || [];
-let gastos = JSON.parse(localStorage.getItem('gastos')) || [];
-let totalDia = JSON.parse(localStorage.getItem('totalDia'));
+let cierres = JSON.parse(localStorage.getItem("cierres")) || [];
+let gastos = JSON.parse(localStorage.getItem("gastos")) || [];
+let totalDia = JSON.parse(localStorage.getItem("totalDia"));
 
 if (!totalDia || totalDia.fecha !== hoy) {
   totalDia = { fecha: hoy, total: 0 };
   gastos = [];
-  localStorage.setItem('gastos', JSON.stringify(gastos));
-  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+  localStorage.setItem("gastos", JSON.stringify(gastos));
+  localStorage.setItem("totalDia", JSON.stringify(totalDia));
 }
 
 // ================= CALCULAR =================
@@ -33,21 +33,22 @@ function calcular() {
   const retorno = Number(retornoInput.value) || 0;
   const precio = Number(precioInput.value) || 0;
 
-  const vendidos = inicio - retorno;
-  const total = vendidos * precio;
+  const vendidos = Math.max(inicio - retorno, 0);
+  const total = Math.max(vendidos * precio, 0);
 
-  vendidosInput.value = vendidos > 0 ? vendidos : 0;
-  totalInput.value = total > 0 ? total.toFixed(2) : "0.00";
+  vendidosInput.value = vendidos;
+  totalInput.value = total.toFixed(2);
 }
 
-[inicioInput, retornoInput, precioInput].forEach(i =>
-  i.addEventListener('input', calcular)
+[inicioInput, retornoInput, precioInput].forEach((i) =>
+  i.addEventListener("input", calcular)
 );
 
 // ================= GUARDAR CIERRE =================
-document.getElementById('guardarBtn').addEventListener('click', () => {
+document.getElementById("guardarBtn").addEventListener("click", () => {
   const vendidos = Number(vendidosInput.value);
   const total = Number(totalInput.value);
+
   if (vendidos <= 0 || total <= 0) return;
 
   cierres.push({
@@ -55,13 +56,13 @@ document.getElementById('guardarBtn').addEventListener('click', () => {
     descripcion: descripcionInput.value,
     codigo: codigoInput.value,
     vendidos,
-    total
+    total,
   });
 
   totalDia.total += total;
 
-  localStorage.setItem('cierres', JSON.stringify(cierres));
-  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+  localStorage.setItem("cierres", JSON.stringify(cierres));
+  localStorage.setItem("totalDia", JSON.stringify(totalDia));
 
   descripcionInput.value = "";
   codigoInput.value = "";
@@ -75,16 +76,17 @@ document.getElementById('guardarBtn').addEventListener('click', () => {
 });
 
 // ================= GASTOS =================
-document.getElementById('agregarGasto').addEventListener('click', () => {
-  const desc = document.getElementById('gastoDesc').value;
-  const monto = Number(document.getElementById('gastoMonto').value);
+document.getElementById("agregarGasto").addEventListener("click", () => {
+  const desc = document.getElementById("gastoDesc").value;
+  const monto = Number(document.getElementById("gastoMonto").value);
+
   if (!desc || monto <= 0) return;
 
   gastos.push({ desc, monto });
-  localStorage.setItem('gastos', JSON.stringify(gastos));
+  localStorage.setItem("gastos", JSON.stringify(gastos));
 
-  document.getElementById('gastoDesc').value = "";
-  document.getElementById('gastoMonto').value = "";
+  document.getElementById("gastoDesc").value = "";
+  document.getElementById("gastoMonto").value = "";
 
   actualizarResumen();
   mostrar();
@@ -92,14 +94,14 @@ document.getElementById('agregarGasto').addEventListener('click', () => {
 
 // ================= MOSTRAR =================
 function mostrar() {
-  const lista = document.getElementById('lista');
+  const lista = document.getElementById("lista");
   lista.innerHTML = "";
-  const filtro = document.getElementById('filtroFecha').value;
+  const filtro = document.getElementById("filtroFecha").value;
 
   cierres.forEach((c, i) => {
     if (filtro && c.fecha !== filtro) return;
 
-    const tr = document.createElement('tr');
+    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>Venta</td>
       <td>${c.fecha}</td>
@@ -113,7 +115,7 @@ function mostrar() {
   });
 
   gastos.forEach((g, i) => {
-    const tr = document.createElement('tr');
+    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>Gasto</td>
       <td>${hoy}</td>
@@ -134,8 +136,8 @@ function eliminarCierre(i) {
   totalDia.total -= cierres[i].total;
   cierres.splice(i, 1);
 
-  localStorage.setItem('cierres', JSON.stringify(cierres));
-  localStorage.setItem('totalDia', JSON.stringify(totalDia));
+  localStorage.setItem("cierres", JSON.stringify(cierres));
+  localStorage.setItem("totalDia", JSON.stringify(totalDia));
 
   actualizarResumen();
   mostrar();
@@ -145,7 +147,7 @@ function eliminarGasto(i) {
   if (!confirm("¿Eliminar gasto?")) return;
 
   gastos.splice(i, 1);
-  localStorage.setItem('gastos', JSON.stringify(gastos));
+  localStorage.setItem("gastos", JSON.stringify(gastos));
 
   actualizarResumen();
   mostrar();
@@ -161,35 +163,81 @@ function actualizarResumen() {
   efectivoRealInput.value = "$" + efectivo.toFixed(2);
 }
 
-// ================= CALENDARIO (WEBINTOAPP) =================
-document.getElementById('addCalendar').addEventListener('click', () => {
+// ================= PDF TOTALMENTE OFFLINE =================
+document.getElementById("addCalendar").addEventListener("click", () => {
+  const doc = new jsPDF();
 
-  const fecha = hoy.replace(/-/g, '');
+  doc.setFontSize(16);
+  doc.text("Cierre Diario", 105, 15, { align: "center" });
 
-  const texto =
-`Cierre diario
-Fecha: ${hoy}
+  doc.setFontSize(12);
+  doc.text(`Fecha: ${hoy}`, 14, 30);
+  doc.text(`Total vendido: $${totalDia.total.toFixed(2)}`, 14, 38);
 
-Total vendido: ${totalDiaInput.value}
-Gastos del día: ${totalGastosInput.value}
-Efectivo real esperado: ${efectivoRealInput.value}`;
+  const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
+  doc.text(`Gastos del día: $${totalGastos.toFixed(2)}`, 14, 46);
 
-  const url =
-`https://calendar.google.com/calendar/render?action=TEMPLATE
-&text=Cierre Diario
-&dates=${fecha}/${fecha}
-&details=${encodeURIComponent(texto)}`;
+  doc.text(
+    `Efectivo real esperado: $${(totalDia.total - totalGastos).toFixed(2)}`,
+    14,
+    54
+  );
 
-  window.location.href = url;
+  let y = 64;
+
+  // VENTAS
+  doc.setFontSize(14);
+  doc.text("DETALLE DE VENTAS", 14, y);
+  y += 6;
+
+  doc.setFontSize(12);
+  cierres.forEach((c) => {
+    doc.text(
+      `• ${c.descripcion} (${c.codigo}) — ${c.vendidos} vendidos — $${c.total.toFixed(
+        2
+      )}`,
+      14,
+      y
+    );
+    y += 6;
+
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  // GASTOS
+  if (gastos.length) {
+    y += 6;
+    doc.setFontSize(14);
+    doc.text("DETALLE DE GASTOS", 14, y);
+    y += 6;
+
+    doc.setFontSize(12);
+    gastos.forEach((g) => {
+      doc.text(`• ${g.desc}: $${g.monto.toFixed(2)}`, 14, y);
+      y += 6;
+
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+  }
+
+  doc.save(`Cierre_${hoy}.pdf`);
 });
 
 // ================= UI =================
-document.getElementById('toggleDark')
-  .addEventListener('click', () => document.body.classList.toggle('dark'));
+document
+  .getElementById("toggleDark")
+  .addEventListener("click", () => document.body.classList.toggle("dark"));
 
-document.getElementById('filtroFecha')
-  .addEventListener('change', mostrar);
+document.getElementById("filtroFecha").addEventListener("change", mostrar);
 
 // ================= INIT =================
 mostrar();
 actualizarResumen();
+
+    
